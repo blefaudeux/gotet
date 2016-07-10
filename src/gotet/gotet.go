@@ -43,8 +43,27 @@ type Response struct {
 	// TODO: Implement JSON exports
 }
 
-func (c *Client) send(message []byte) {
-	c.socket.SendBytes(message)
+func (c *Client) send(message []byte) error {
+	if err := c.socket.SendBytes(message); err != nil {
+		return err
+	}
+	return nil
+}
+
+// sendReq sends a Request-formatted json object to the server
+func (c *Client) sendReq(cat string, val string) (map[string]interface{}, error) {
+	req := Request{
+		Category: cat,
+		Request:  "get",
+		Values:   []string{val}}
+
+	reqb, _ := json.Marshal(req)
+	if err := c.send(reqb); err != nil {
+		return nil, err
+	}
+
+	reply := c.readB("request", "get")
+	return reply, nil
 }
 
 func (c *Client) readB(field string, value string) map[string]interface{} {
@@ -52,16 +71,34 @@ func (c *Client) readB(field string, value string) map[string]interface{} {
 }
 
 // Version reports the protocol version currently used
-func (c *Client) Version() (float64, error) {
-	req := Request{
-		Category: "tracker",
-		Request:  "get",
-		Values:   []string{"version"}}
+func (c *Client) Version() (int, error) {
+	reply, err := c.sendReq("tracker", "version")
+	if err != nil {
+		return 0, err
+	}
 
-	reqb, _ := json.Marshal(req)
-	c.send(reqb)
-
-	reply := c.readB("request", "get")
 	vers := reply["values"].(map[string]interface{})
-	return vers["version"].(float64), nil
+	return int(vers["version"].(float64)), nil
+}
+
+// IsCalibrated reports whether the server is currently calibrated
+func (c *Client) IsCalibrated() (bool, error) {
+	reply, err := c.sendReq("tracker", "iscalibrated")
+	if err != nil {
+		return false, err
+	}
+
+	vers := reply["values"].(map[string]interface{})
+	return vers["iscalibrated"].(bool), nil
+}
+
+// IsCalibrating reports whether the server is currently calibrated
+func (c *Client) IsCalibrating() (bool, error) {
+	reply, err := c.sendReq("tracker", "iscalibrating")
+	if err != nil {
+		return false, err
+	}
+
+	vers := reply["values"].(map[string]interface{})
+	return vers["iscalibrating"].(bool), nil
 }
