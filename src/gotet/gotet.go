@@ -29,17 +29,17 @@ func (c *Client) Close() {
 }
 
 // IO helpers
-type request struct {
-	category string   `json:"category"`
-	request  string   `json:"request"`
-	values   []string `json:"values"`
+type Request struct {
+	Category string   `json:"category"`
+	Request  string   `json:"request"`
+	Values   []string `json:"values"`
 	// TODO: Implement JSON exports
 }
 
-type response struct {
-	category string                 `json:"category"`
-	request  string                 `json:"request"`
-	values   map[string]interface{} `json:"values"`
+type Response struct {
+	Category string                 `json:"category"`
+	Request  string                 `json:"request"`
+	Values   map[string]interface{} `json:"values"`
 	// TODO: Implement JSON exports
 }
 
@@ -52,16 +52,16 @@ func (c *Client) readB(field string, value string) map[string]interface{} {
 }
 
 // Version reports the protocol version currently used
-func (c *Client) Version() (int, error) {
-	req := request{
-		category: "tracker",
-		request:  "get",
-		values:   []string{"version"}}
+func (c *Client) Version() (float64, error) {
+	req := Request{
+		Category: "tracker",
+		Request:  "get",
+		Values:   []string{"version"}}
 
 	reqb, _ := json.Marshal(req)
 	c.send(reqb)
 
 	reply := c.readB("request", "get")
 	vers := reply["values"].(map[string]interface{})
-	return vers["version"].(int), nil
+	return vers["version"].(float64), nil
 }
