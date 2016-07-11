@@ -21,6 +21,14 @@ type Request struct {
 	// TODO: Implement JSON exports
 }
 
+// RequestComp is an interface{} serving as a JSON skeleleton for all complex requests
+type RequestComp struct {
+	Category string   `json:"category"`
+	Request  string   `json:"request"`
+	Values   map[string]int `json:"values"`
+	// TODO: Implement JSON exports
+}
+
 // Response is an interface{} serving as a JSON skeleleton for all server responses
 type Response struct {
 	Category string                 `json:"category"`
@@ -54,6 +62,22 @@ func (c *Client) sendReq(cat string, val string) (map[string]interface{}, error)
 	return reply, nil
 }
 
+// sendReqComp sends a RequestComp-formatted json object to the server
+func (c *Client) sendReqComp(cat string, req string, val map[string]int) (map[string]interface{}, error) {
+	message := RequestComp{
+		Category: cat,
+		Request:  req,
+		Values:   val}
+
+	messB, _ := json.Marshal(message)
+	if err := c.send(messB); err != nil {
+		return nil, err
+	}
+
+	reply := c.readB("request", req)
+	return reply, nil
+}
+
 // readB waits for a given json struct (described by a given field and value) to appear
 func (c *Client) readB(field string, value string) map[string]interface{} {
 	return c.socket.ReadBlock(field, value)
@@ -71,6 +95,16 @@ func (c *Client) handleReq(cat string, val string) (interface{}, error) {
 	return res[val], nil
 }
 
+// handleReqComp is a proxy for the whole "send request and grab server feedback" loop
+func (c *Client) handleReqComp(cat string, req string, val map[string]int) (int, error) {
+	reply, err := c.sendReqComp(cat, req, val)
+
+	if err != nil {
+		return 0, err
+	}
+	
+	return int(reply["statuscode"].(float64)), nil
+}
 
 // Connect to a running server
 func (c *Client) Connect(addr, port string) error {
@@ -220,15 +254,59 @@ func (c *Client) ScreenPsyH() (float64, error) {
 }
 
 // -- Calibration
-/*
+
 // CalibStart prepares the tracker for a new calibration
-func (c *Client) CalibStart(int) error {
-	res, err := c.handleReq("calibration", "version")
+func (c *Client) CalibStart( pts int) (bool, error) {
+	values := map[string] int{"pointcount" : pts}
+
+	res, err := c.handleReqComp("calibration", "start", values)
 
 	if err != nil {
-		return 0, err
+		return false, err
 	}
 
-	return int(res.(float64)), nil
+	return res == 200, nil
 }
-*/
+
+// CalibPointStart sends the coordinate of a new point
+func (c *Client) CalibPointStart( ptx, pty int) (bool, error) {
+	values := map[string] int{"x" : ptx, "y" : pty}
+
+	res, err := c.handleReqComp("calibration", "pointstart", values)
+
+	if err != nil {
+		return false, err
+	}
+
+	return res == 200, nil
+}
+
+// CalibPointEnd ends the calibration process for the current point
+func (c *Client) CalibPointEnd() (bool, error) {
+	res, err := c.handleReqComp("calibration", "pointend", map[string]int{})
+	if err != nil {
+		return false, err
+	}
+
+	// TODO: Grab the calib results if needed
+
+	return res == 200, nil
+}
+
+// CalibAbort aborts the calibration process
+func (c *Client) CalibAbort() (bool, error) {
+	res, err := c.handleReqComp("calibration", "abort", map[string]int{})
+	if err != nil {
+		return false, err
+	}
+	return res == 200, nil
+}
+
+// CalibClear clear the server calibration status
+func (c *Client) CalibClear() (bool, error) {
+	res, err := c.handleReqComp("calibration", "clear", map[string]int{})
+	if err != nil {
+		return false, err
+	}
+	return res == 200, nil
+}

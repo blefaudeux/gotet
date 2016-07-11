@@ -45,4 +45,20 @@ func main() {
 
 	fd, _ := client.FrameData()
 	fmt.Println("Frame data: \n", fd)
+
+	// Test the Calibration calls
+	cs, _ := client.CalibStart(10)
+	fmt.Println("Started server calibration: \n", cs)
+
+	cps, _ := client.CalibPointStart(200, 200)
+	fmt.Println("Started server point calibration: \n", cps)
+
+	cpe, _ := client.CalibPointEnd()
+	fmt.Println("Ended server point calibration: \n", cpe)
+
+	ca, _ := client.CalibAbort()
+	fmt.Println("Aborted server calibration: \n", ca)
+
+	cc, _ := client.CalibClear()
+	fmt.Println("Cleared server calibration: \n", cc)
 }
