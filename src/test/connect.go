@@ -10,6 +10,7 @@ func main() {
 	client.Connect("localhost", "6555")
 
 	// Basic API tests. Check all status calls
+	// Tracker calls
 	version, _ := client.Version()
 	fmt.Println("Protocol version: ", version)
 
@@ -46,7 +47,7 @@ func main() {
 	fd, _ := client.FrameData()
 	fmt.Println("Frame data: \n", fd)
 
-	// Test the Calibration calls
+	// Calibration calls
 	cs, _ := client.CalibStart(10)
 	fmt.Println("Started server calibration: \n", cs)
 

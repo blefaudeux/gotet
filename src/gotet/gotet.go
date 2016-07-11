@@ -9,8 +9,9 @@ import (
 
 // Client is a socket client to a The Eye Tribe server
 type Client struct {
-	addr, port string
-	socket     dealer.Socket
+	addr, port   string
+	socket       dealer.Socket
+	pointsToPush int
 }
 
 // Request is an interface{} serving as a JSON skeleleton for all requests
@@ -23,8 +24,8 @@ type Request struct {
 
 // RequestComp is an interface{} serving as a JSON skeleleton for all complex requests
 type RequestComp struct {
-	Category string   `json:"category"`
-	Request  string   `json:"request"`
+	Category string         `json:"category"`
+	Request  string         `json:"request"`
 	Values   map[string]int `json:"values"`
 	// TODO: Implement JSON exports
 }
@@ -91,7 +92,7 @@ func (c *Client) handleReq(cat string, val string) (interface{}, error) {
 		return "", err
 	}
 	res := reply["values"].(map[string]interface{})
-	
+
 	return res[val], nil
 }
 
@@ -102,7 +103,7 @@ func (c *Client) handleReqComp(cat string, req string, val map[string]int) (int,
 	if err != nil {
 		return 0, err
 	}
-	
+
 	return int(reply["statuscode"].(float64)), nil
 }
 
@@ -151,7 +152,7 @@ func (c *Client) Trackerstate() (int, error) {
 }
 
 // FrameData reports the last gaze estimation results
-func (c *Client) FrameData() (map[string] interface{}, error) {
+func (c *Client) FrameData() (map[string]interface{}, error) {
 	reply, err := c.sendReq("tracker", "frame")
 
 	if err != nil {
@@ -193,7 +194,7 @@ func (c *Client) IsCalibrating() (bool, error) {
 }
 
 // CalibResult reports the calibration results
-func (c *Client) CalibResult() (map[string] interface{}, error) {
+func (c *Client) CalibResult() (map[string]interface{}, error) {
 	reply, err := c.sendReq("tracker", "calibresult")
 
 	if err != nil {
@@ -256,8 +257,8 @@ func (c *Client) ScreenPsyH() (float64, error) {
 // -- Calibration
 
 // CalibStart prepares the tracker for a new calibration
-func (c *Client) CalibStart( pts int) (bool, error) {
-	values := map[string] int{"pointcount" : pts}
+func (c *Client) CalibStart(pts int) (bool, error) {
+	values := map[string]int{"pointcount": pts}
 
 	res, err := c.handleReqComp("calibration", "start", values)
 
@@ -265,12 +266,13 @@ func (c *Client) CalibStart( pts int) (bool, error) {
 		return false, err
 	}
 
+	c.pointsToPush = pts
 	return res == 200, nil
 }
 
 // CalibPointStart sends the coordinate of a new point
-func (c *Client) CalibPointStart( ptx, pty int) (bool, error) {
-	values := map[string] int{"x" : ptx, "y" : pty}
+func (c *Client) CalibPointStart(ptx, pty int) (bool, error) {
+	values := map[string]int{"x": ptx, "y": pty}
 
 	res, err := c.handleReqComp("calibration", "pointstart", values)
 
@@ -288,7 +290,13 @@ func (c *Client) CalibPointEnd() (bool, error) {
 		return false, err
 	}
 
-	// TODO: Grab the calib results if needed
+	c.pointsToPush--
+
+	// Calibration sequence is done, grab the result
+	if c.pointsToPush == 0 {
+		calibRes := c.readB("tracker", "calibresult")
+		return calibRes["result"].(bool), nil
+	}
 
 	return res == 200, nil
 }
