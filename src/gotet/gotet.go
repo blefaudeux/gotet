@@ -19,7 +19,6 @@ type Request struct {
 	Category string   `json:"category"`
 	Request  string   `json:"request"`
 	Values   []string `json:"values"`
-	// TODO: Implement JSON exports
 }
 
 // RequestComp is an interface{} serving as a JSON skeleleton for all complex requests
@@ -27,7 +26,6 @@ type RequestComp struct {
 	Category string         `json:"category"`
 	Request  string         `json:"request"`
 	Values   map[string]int `json:"values"`
-	// TODO: Implement JSON exports
 }
 
 // Response is an interface{} serving as a JSON skeleleton for all server responses
@@ -35,7 +33,6 @@ type Response struct {
 	Category string                 `json:"category"`
 	Request  string                 `json:"request"`
 	Values   map[string]interface{} `json:"values"`
-	// TODO: Implement JSON exports
 }
 
 // ---- Helpers (private)
@@ -176,6 +173,7 @@ func (c *Client) Framerate() (int, error) {
 // IsCalibrated reports whether the server is currently calibrated
 func (c *Client) IsCalibrated() (bool, error) {
 	res, err := c.handleReq("tracker", "iscalibrated")
+
 	if err != nil {
 		return false, err
 	}
@@ -186,6 +184,7 @@ func (c *Client) IsCalibrated() (bool, error) {
 // IsCalibrating reports whether the server is currently calibrated
 func (c *Client) IsCalibrating() (bool, error) {
 	res, err := c.handleReq("tracker", "iscalibrating")
+
 	if err != nil {
 		return false, err
 	}
@@ -207,6 +206,7 @@ func (c *Client) CalibResult() (map[string]interface{}, error) {
 // ScreenIndex reports the index of the screen currently in use
 func (c *Client) ScreenIndex() (int, error) {
 	res, err := c.handleReq("tracker", "screenindex")
+
 	if err != nil {
 		return 0, err
 	}
@@ -217,6 +217,7 @@ func (c *Client) ScreenIndex() (int, error) {
 // ScreenResH reports the number of vertical lines on the screen
 func (c *Client) ScreenResH() (int, error) {
 	res, err := c.handleReq("tracker", "screenresh")
+
 	if err != nil {
 		return 0, err
 	}
@@ -227,6 +228,7 @@ func (c *Client) ScreenResH() (int, error) {
 // ScreenResW reports the number of horizontal lines on the screen
 func (c *Client) ScreenResW() (int, error) {
 	res, err := c.handleReq("tracker", "screenresw")
+
 	if err != nil {
 		return 0, err
 	}
@@ -237,6 +239,7 @@ func (c *Client) ScreenResW() (int, error) {
 // ScreenPsyW reports the physical (meters) width of the screen
 func (c *Client) ScreenPsyW() (float64, error) {
 	res, err := c.handleReq("tracker", "screenpsyh")
+
 	if err != nil {
 		return 0, err
 	}
@@ -247,6 +250,7 @@ func (c *Client) ScreenPsyW() (float64, error) {
 // ScreenPsyH reports the physical (meters) height of the screen
 func (c *Client) ScreenPsyH() (float64, error) {
 	res, err := c.handleReq("tracker", "screenpsyh")
+
 	if err != nil {
 		return 0, err
 	}
@@ -304,17 +308,23 @@ func (c *Client) CalibPointEnd() (bool, error) {
 // CalibAbort aborts the calibration process
 func (c *Client) CalibAbort() (bool, error) {
 	res, err := c.handleReqComp("calibration", "abort", map[string]int{})
+
+	c.pointsToPush = 0
+
 	if err != nil {
 		return false, err
 	}
+
 	return res == 200, nil
 }
 
 // CalibClear clear the server calibration status
 func (c *Client) CalibClear() (bool, error) {
 	res, err := c.handleReqComp("calibration", "clear", map[string]int{})
+
 	if err != nil {
 		return false, err
 	}
+
 	return res == 200, nil
 }
