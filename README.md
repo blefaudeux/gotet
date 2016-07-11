@@ -10,12 +10,15 @@ You'll need to install *dealer*, a super small socket client handling json reque
 > go get github.com/blefaudeux/dealer/src/dealer
 
 Afterwards, the syntax should be pretty self-explanatory, but something like 
-> import "gotet"
->
-> client := gotet.Client{}
-> client.Connect("localhost", "6555")
+```go
+import "gotet"
 
-should be enough to get you running
+client := gotet.Client{}
+client.Connect("localhost", "6555")
+client.Whatever()
+```
+
+should be enough to get you up and running
 
 
 
