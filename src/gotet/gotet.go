@@ -71,7 +71,6 @@ func (c *Client) handleReq(cat string, val string) (interface{}, error) {
 	return res[val], nil
 }
 
-// ---- Implement all the API calls as methods
 
 // Connect to a running server
 func (c *Client) Connect(addr, port string) error {
@@ -84,6 +83,10 @@ func (c *Client) Connect(addr, port string) error {
 
 	return nil
 }
+
+// ---- Implement all the API calls as methods
+
+// -- Tracker
 
 // Close client connection
 func (c *Client) Close() {
@@ -215,3 +218,17 @@ func (c *Client) ScreenPsyH() (float64, error) {
 
 	return res.(float64), nil
 }
+
+// -- Calibration
+/*
+// CalibStart prepares the tracker for a new calibration
+func (c *Client) CalibStart(int) error {
+	res, err := c.handleReq("calibration", "version")
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.(float64)), nil
+}
+*/

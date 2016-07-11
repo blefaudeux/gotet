@@ -9,7 +9,7 @@ func main() {
 	client := gotet.Client{}
 	client.Connect("localhost", "6555")
 
-	// Basic API tests. Check status calls
+	// Basic API tests. Check all status calls
 	version, _ := client.Version()
 	fmt.Println("Protocol version: ", version)
 
@@ -41,5 +41,8 @@ func main() {
 	fmt.Println("Screen physical height: ", sph)
 
 	calibres, _ := client.CalibResult()
-	fmt.Println("Calibd results: ", calibres)
+	fmt.Println("Calib results: \n", calibres)
+
+	fd, _ := client.FrameData()
+	fmt.Println("Frame data: \n", fd)
 }
