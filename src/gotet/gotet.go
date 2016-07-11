@@ -5,27 +5,12 @@ import (
 	"encoding/json"
 )
 
-// Client a socket client to a The Eye Tribe server
+// ---- Define needed structures
+
+// Client is a socket client to a The Eye Tribe server
 type Client struct {
 	addr, port string
 	socket     dealer.Socket
-}
-
-// Connect to a running server
-func (c *Client) Connect(addr, port string) error {
-	c.addr = addr
-	c.port = port
-
-	if err := c.socket.Connect(addr, port); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Close client connection
-func (c *Client) Close() {
-	c.socket.Close()
 }
 
 // Request is an interface{} serving as a JSON skeleleton for all requests
@@ -42,6 +27,25 @@ type Response struct {
 	Request  string                 `json:"request"`
 	Values   map[string]interface{} `json:"values"`
 	// TODO: Implement JSON exports
+}
+
+// ---- Implement all the corresponding methods
+
+// Connect to a running server
+func (c *Client) Connect(addr, port string) error {
+	c.addr = addr
+	c.port = port
+
+	if err := c.socket.Connect(addr, port); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Close client connection
+func (c *Client) Close() {
+	c.socket.Close()
 }
 
 func (c *Client) send(message []byte) error {
