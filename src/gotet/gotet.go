@@ -29,24 +29,7 @@ type Response struct {
 	// TODO: Implement JSON exports
 }
 
-// ---- Implement all the corresponding methods
-
-// Connect to a running server
-func (c *Client) Connect(addr, port string) error {
-	c.addr = addr
-	c.port = port
-
-	if err := c.socket.Connect(addr, port); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Close client connection
-func (c *Client) Close() {
-	c.socket.Close()
-}
+// ---- Helpers (private)
 
 func (c *Client) send(message []byte) error {
 	if err := c.socket.SendBytes(message); err != nil {
@@ -88,6 +71,25 @@ func (c *Client) handleReq(cat string, val string) (interface{}, error) {
 	return res[val], nil
 }
 
+// ---- Implement all the API calls as methods
+
+// Connect to a running server
+func (c *Client) Connect(addr, port string) error {
+	c.addr = addr
+	c.port = port
+
+	if err := c.socket.Connect(addr, port); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Close client connection
+func (c *Client) Close() {
+	c.socket.Close()
+}
+
 // Version reports the protocol version currently used
 func (c *Client) Version() (int, error) {
 	res, err := c.handleReq("tracker", "version")
@@ -109,6 +111,17 @@ func (c *Client) Trackerstate() (int, error) {
 	}
 
 	return int(res.(float64)), nil
+}
+
+// FrameData reports the last gaze estimation results
+func (c *Client) FrameData() (map[string] interface{}, error) {
+	reply, err := c.sendReq("tracker", "frame")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return reply["values"].(map[string]interface{}), nil
 }
 
 // Framerate reports the current tracker framerate
@@ -142,6 +155,17 @@ func (c *Client) IsCalibrating() (bool, error) {
 	return res.(bool), nil
 }
 
+// CalibResult reports the calibration results
+func (c *Client) CalibResult() (map[string] interface{}, error) {
+	reply, err := c.sendReq("tracker", "calibresult")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return reply["values"].(map[string]interface{}), nil
+}
+
 // ScreenIndex reports the index of the screen currently in use
 func (c *Client) ScreenIndex() (int, error) {
 	res, err := c.handleReq("tracker", "screenindex")
@@ -162,7 +186,7 @@ func (c *Client) ScreenResH() (int, error) {
 	return int(res.(float64)), nil
 }
 
-// ScreenResV reports the number of horizontal lines on the screen
+// ScreenResW reports the number of horizontal lines on the screen
 func (c *Client) ScreenResW() (int, error) {
 	res, err := c.handleReq("tracker", "screenresw")
 	if err != nil {

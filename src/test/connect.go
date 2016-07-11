@@ -39,4 +39,7 @@ func main() {
 
 	sph, _ := client.ScreenPsyH()
 	fmt.Println("Screen physical height: ", sph)
+
+	calibres, _ := client.CalibResult()
+	fmt.Println("Calibd results: ", calibres)
 }
