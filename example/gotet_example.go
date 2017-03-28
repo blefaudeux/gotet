@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gotet"
+	"github.com/blefaudeux/gotet/gotet"
 )
 
 func main() {

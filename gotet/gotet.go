@@ -1,8 +1,8 @@
 package gotet
 
 import (
-	"dealer"
 	"encoding/json"
+	"github.com/blefaudeux/dealer"
 )
 
 // ---- Define needed structures
